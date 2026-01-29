@@ -1,8 +1,3 @@
-"""
-F1 Historical Data Dashboard - 2026 Season Update
-Main Streamlit application with enhanced styling, news feed, and live data
-"""
-
 import streamlit as st
 import sys
 import os

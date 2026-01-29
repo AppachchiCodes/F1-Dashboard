@@ -1,8 +1,3 @@
-"""
-Visualization functions for F1 Dashboard
-Creates all Plotly charts and graphs - 2026 Update
-"""
-
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd

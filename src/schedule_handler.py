@@ -1,8 +1,3 @@
-"""
-Schedule Handler for F1 Dashboard - 2026 Season
-Reads race calendar from local JSON file and fetches F1 news
-"""
-
 import json
 import os
 from datetime import datetime, timezone
