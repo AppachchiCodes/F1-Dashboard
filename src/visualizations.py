@@ -1,6 +1,6 @@
 """
 Visualization functions for F1 Dashboard
-Creates all Plotly charts and graphs
+Creates all Plotly charts and graphs - 2026 Update
 """
 
 import plotly.graph_objects as go
@@ -284,7 +284,8 @@ def get_flag_emoji(country_code: str) -> str:
         'USA': '🇺🇸', 'ITA': '🇮🇹', 'MCO': '🇲🇨', 'ESP': '🇪🇸', 'CAN': '🇨🇦',
         'AUT': '🇦🇹', 'GBR': '🇬🇧', 'HUN': '🇭🇺', 'BEL': '🇧🇪', 'NLD': '🇳🇱',
         'AZE': '🇦🇿', 'SGP': '🇸🇬', 'MEX': '🇲🇽', 'BRA': '🇧🇷', 'UAE': '🇦🇪',
-        'QAT': '🇶🇦', 'LVA': '🇱🇻', 'PRT': '🇵🇹', 'F1': '🏁'
+        'QAT': '🇶🇦', 'LVA': '🇱🇻', 'PRT': '🇵🇹', 'F1': '🏁',
+        'FRA': '🇫🇷', 'DEU': '🇩🇪', 'TUR': '🇹🇷', 'RUS': '🇷🇺'
     }
     return flags.get(country_code, '🏁')
 
@@ -640,6 +641,127 @@ def create_schedule_cards_html(schedule_data: List[Dict], next_race_countdown: O
         updateCountdowns();
         setInterval(updateCountdowns, 1000);
     </script>
+    '''
+    
+    return html
+
+
+def create_news_cards_html(news_data: List[Dict]) -> str:
+    """Create HTML for F1 news cards"""
+    
+    html = '<div class="news-container">'
+    
+    for news in news_data:
+        html += f'''
+        <div class="news-card">
+            <div class="news-header">
+                <span class="news-date">📅 {news.get('date', 'Recent')}</span>
+            </div>
+            <div class="news-body">
+                <h3 class="news-title">{news.get('title', 'F1 News')}</h3>
+                <p class="news-summary">{news.get('summary', 'Click to read more...')}</p>
+            </div>
+            <div class="news-footer">
+                <a href="{news.get('url', '#')}" target="_blank" class="news-link">
+                    Read Full Article →
+                </a>
+            </div>
+        </div>
+        '''
+    
+    html += '</div>'
+    
+    # Enhanced CSS for news cards
+    html += '''
+    <style>
+        .news-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+            padding: 20px 0;
+        }
+        
+        .news-card {
+            background: linear-gradient(135deg, #15151E 0%, #1a1a2e 100%);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid #2a2a3e;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .news-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(225, 6, 0, 0.3);
+            border-color: #E10600;
+        }
+        
+        .news-header {
+            padding: 16px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid #2a2a3e;
+        }
+        
+        .news-date {
+            font-size: 0.85rem;
+            color: #AAAAAA;
+            font-weight: 500;
+        }
+        
+        .news-body {
+            padding: 24px 20px;
+            flex: 1;
+        }
+        
+        .news-title {
+            font-family: 'Titillium Web', sans-serif;
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: #FFFFFF;
+            margin: 0 0 12px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            line-height: 1.3;
+        }
+        
+        .news-summary {
+            font-size: 0.95rem;
+            color: #CCCCCC;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .news-footer {
+            padding: 16px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid #2a2a3e;
+        }
+        
+        .news-link {
+            color: #E10600;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .news-link:hover {
+            color: #FF6600;
+            transform: translateX(5px);
+        }
+        
+        @media (max-width: 768px) {
+            .news-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
     '''
     
     return html

@@ -10,7 +10,7 @@ from typing import Dict, Tuple
 class F1DataLoader:
     """Load and process F1 historical data from CSV files"""
     
-    def __init__(self, data_dir: str = "data"):
+    def __init__(self, data_dir: str = "../data"):
         self.data_dir = data_dir
         self.races = None
         self.results = None

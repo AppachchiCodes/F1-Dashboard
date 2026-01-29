@@ -1,6 +1,6 @@
 """
-Schedule Handler for F1 Dashboard
-Reads race calendar from local JSON file
+Schedule Handler for F1 Dashboard - 2026 Season
+Reads race calendar from local JSON file and fetches F1 news
 """
 
 import json
@@ -8,11 +8,13 @@ import os
 from datetime import datetime, timezone
 from typing import List, Dict, Optional
 import streamlit as st
+import requests
+from bs4 import BeautifulSoup
 
 class F1ScheduleHandler:
     """Handles F1 race schedule from local JSON file"""
     
-    def __init__(self, year: int = 2025):
+    def __init__(self, year: int = 2026):
         self.year = year
         self.races = []
         
@@ -107,13 +109,14 @@ class F1ScheduleHandler:
                 country_codes = {
                     'Australian': 'AUS', 'Chinese': 'CHN', 'Japanese': 'JPN',
                     'Bahrain': 'BHR', 'Saudi Arabian': 'SAU', 'Miami': 'USA',
-                    'Emilia Romagna Grand Prix': 'ITA', 'Monaco': 'MCO',
+                    'Emilia Romagna': 'ITA', 'Monaco': 'MCO',
                     'Spanish': 'ESP', 'Canadian': 'CAN', 'Austrian': 'AUT',
                     'British': 'GBR', 'Belgian': 'BEL', 'Hungarian': 'HUN',
                     'Dutch': 'NLD', 'Italian': 'ITA', 'Azerbaijan': 'AZE',
                     'Singapore': 'SGP', 'United States': 'USA', 'Mexican': 'MEX',
                     'Brazilian': 'BRA', 'Las Vegas': 'USA', 'Qatar': 'QAT',
-                    'Abu Dhabi': 'UAE'
+                    'Abu Dhabi': 'UAE', 'Portuguese': 'PRT', 'Turkish': 'TUR',
+                    'Russian': 'RUS', 'French': 'FRA', 'German': 'DEU'
                 }
                 
                 formatted.append({
@@ -144,10 +147,46 @@ class F1ScheduleHandler:
         
         return formatted
 
+
+class F1NewsHandler:
+    """Fetches F1 news from various sources"""
+    
+    @staticmethod
+    def fetch_f1_news() -> List[Dict]:
+        """Fetch latest F1 news"""
+        news_items = []
+        
+        try:
+            # Using a news API or RSS feed would be ideal
+            # For now, we'll return placeholder structure
+            # In production, you'd integrate with F1's RSS feed or a news API
+            
+            # Example structure of what would be returned:
+            news_items = [
+                {
+                    'title': 'Check Formula1.com for latest news',
+                    'url': 'https://www.formula1.com/en/latest.html',
+                    'date': datetime.now(timezone.utc).strftime('%Y-%m-%d'),
+                    'summary': 'Visit the official F1 website for the latest news, race results, and updates.'
+                }
+            ]
+            
+        except Exception as e:
+            print(f"Error fetching news: {e}")
+        
+        return news_items
+
+
 @st.cache_data(ttl=3600)
-def load_schedule(year: int = 2025):
+def load_schedule(year: int = 2026):
     """Load schedule with caching"""
     handler = F1ScheduleHandler(year=year)
     if handler.load_schedule():
         return handler
     return None
+
+
+@st.cache_data(ttl=1800)
+def load_f1_news():
+    """Load F1 news with caching (30 min TTL)"""
+    return F1NewsHandler.fetch_f1_news()

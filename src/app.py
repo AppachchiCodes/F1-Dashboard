@@ -1,30 +1,32 @@
 """
-F1 Historical Data Dashboard
-Main Streamlit application with enhanced styling and schedule
+F1 Historical Data Dashboard - 2026 Season Update
+Main Streamlit application with enhanced styling, news feed, and live data
 """
 
 import streamlit as st
 import sys
 import os
 import time
+from datetime import datetime, timezone
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.data_loader import F1DataLoader
-from src.schedule_handler import load_schedule
-from src.visualizations import (
+from data_loader import F1DataLoader
+from schedule_handler import load_schedule, load_f1_news
+from visualizations import (
     create_driver_championship_chart,
     create_constructor_heatmap,
     create_circuit_winners_chart,
     create_head_to_head_comparison,
     create_stats_cards,
-    create_schedule_cards_html
+    create_schedule_cards_html,
+    create_news_cards_html
 )
 
 # Page configuration
 st.set_page_config(
-    page_title="F1 Analytics Dashboard",
+    page_title="F1 Analytics Dashboard 2026",
     page_icon="🏎️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -172,13 +174,6 @@ st.markdown("""
             box-shadow: 0 8px 25px rgba(225, 6, 0, 0.4);
         }
         
-        /* Markdown text */
-        .stMarkdown {
-            color: #CCCCCC;
-            font-size: 1rem;
-            font-weight: 400;
-        }
-        
         /* Success/Info boxes */
         .stSuccess {
             background-color: rgba(0, 208, 132, 0.1);
@@ -188,17 +183,17 @@ st.markdown("""
             font-weight: 500;
         }
         
+        .stInfo {
+            background-color: rgba(0, 112, 243, 0.1);
+            border-left: 4px solid #0070F3;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        
         /* Loading animation */
         .stSpinner > div {
             border-color: #E10600 transparent transparent transparent !important;
-        }
-        
-        /* Divider */
-        hr {
-            border: none;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #E10600, transparent);
-            margin: 30px 0;
         }
         
         /* Scrollbar */
@@ -219,12 +214,6 @@ st.markdown("""
         ::-webkit-scrollbar-thumb:hover {
             background: #FF6600;
         }
-        
-        /* Plotly charts */
-        .js-plotly-plot {
-            border-radius: 12px;
-            overflow: hidden;
-        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -243,7 +232,7 @@ def show_loading_screen():
     loading_html = """
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px;">
         <div style="font-size: 80px; animation: race 2s infinite;">🏎️</div>
-        <h2 style="color: #E10600; margin-top: 20px; font-family: 'Titillium Web', sans-serif; font-weight: 700; text-transform: uppercase; animation: pulse 1.5s infinite;">Loading F1 Data</h2>
+        <h2 style="color: #E10600; margin-top: 20px; font-family: 'Titillium Web', sans-serif; font-weight: 700; text-transform: uppercase; animation: pulse 1.5s infinite;">Loading 2026 F1 Data</h2>
         <div style="width: 300px; height: 4px; background: #15151E; border-radius: 2px; margin-top: 20px; overflow: hidden;">
             <div style="width: 100%; height: 100%; background: linear-gradient(90deg, #E10600, #FF6600); animation: loading 1.5s infinite;"></div>
         </div>
@@ -272,9 +261,9 @@ def main():
     # Animated Header
     st.markdown("""
         <div style="text-align: center; padding: 20px 0;">
-            <h1>Formula 1 Analytics</h1>
+            <h1>Formula 1 Analytics 2026</h1>
             <p style="font-size: 1.2rem; color: #CCCCCC; margin-top: -10px; font-weight: 400; letter-spacing: 1px;">
-                EXPLORING SEVEN DECADES OF RACING EXCELLENCE
+                LIVE DATA • RACE CALENDAR • HISTORICAL ANALYSIS • F1 NEWS
             </p>
         </div>
     """, unsafe_allow_html=True)
@@ -288,8 +277,11 @@ def main():
     # Load historical data
     loader = load_data()
     
-    # Load schedule data
-    schedule_handler = load_schedule(2025)
+    # Load schedule data for 2026
+    schedule_handler = load_schedule(2026)
+    
+    # Load F1 news
+    news_data = load_f1_news()
     
     # Clear loading screen
     time.sleep(0.5)
@@ -298,49 +290,95 @@ def main():
     if loader is None:
         st.stop()
     
-    # Create tabs 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "RACE CALENDAR",
-        "CHAMPIONSHIP EVOLUTION",
-        "CONSTRUCTOR DOMINANCE",
-        "CIRCUIT ANALYSIS",
-        "DRIVER COMPARISONS"
+    # Create tabs with NEWS as first tab
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+        "🏁 2026 CALENDAR",
+        "📰 F1 NEWS",
+        "🏆 CHAMPIONSHIP",
+        "🏗️ CONSTRUCTORS",
+        "🛣️ CIRCUITS",
+        "⚔️ HEAD-TO-HEAD"
     ])
     
-    # TAB 1: Race Schedule
+    # TAB 1: 2026 Race Schedule
     with tab1:
         st.markdown("<br>", unsafe_allow_html=True)
-        st.header("2025 FIA Formula 1 World Championship")
+        st.header("2026 FIA Formula 1 World Championship")
         st.markdown("*Complete race calendar with live countdown to the next Grand Prix*")
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # Load schedule
-        schedule_handler_local = load_schedule(2025)
-        
-        if schedule_handler_local and schedule_handler_local.races:
-            schedule_data = schedule_handler_local.get_formatted_schedule()
+        if schedule_handler and schedule_handler.races:
+            schedule_data = schedule_handler.get_formatted_schedule()
             
             if schedule_data:
-                next_race = schedule_handler_local.get_next_race()
+                next_race = schedule_handler.get_next_race()
                 
                 countdown = None
                 if next_race:
-                    countdown = schedule_handler_local.calculate_countdown(next_race['sessions']['gp'])
+                    countdown = schedule_handler.calculate_countdown(next_race['sessions']['gp'])
                 
                 # Show upcoming races count
-                st.success(f"🏁 **{len(schedule_data)} upcoming race(s)** in the 2025 season")
+                st.success(f"🏁 **{len(schedule_data)} upcoming race(s)** in the 2026 season")
                 
                 # Render cards
                 html_output = create_schedule_cards_html(schedule_data, countdown)
                 st.components.v1.html(html_output, height=800, scrolling=True)
             else:
-                st.info("🏆 **2025 F1 Season Complete!** All races have finished.")
+                st.info("🏆 **2026 F1 Season Complete!** All races have finished.")
                 
         else:
-            st.error("Unable to load 2025 F1 schedule. Please check that the schedule file exists in the data folder.")
+            st.warning("⚠️ Unable to load 2026 F1 schedule. You may need to create a schedule file.")
+            st.info("💡 **Tip:** Create a file `data/f1-2026-schedule.json` with the 2026 race calendar data.")
             
-    # TAB 2: Championship Evolution
+    # TAB 2: F1 News Feed
     with tab2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.header("Latest Formula 1 News")
+        st.markdown("*Stay updated with the latest from the world of F1*")
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.info("📡 **News Integration:** This dashboard can be extended to pull live news from F1 RSS feeds or news APIs")
+        
+        with col2:
+            if st.button("🔄 Refresh News", use_container_width=True):
+                st.cache_data.clear()
+                st.rerun()
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Display news cards
+        news_html = create_news_cards_html(news_data)
+        st.components.v1.html(news_html, height=600, scrolling=True)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Official F1 sources
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #15151E 0%, #2a2a3e 100%); 
+                    padding: 25px; border-radius: 12px; border: 2px solid #E10600;">
+            <h3 style="color: #E10600; margin-top: 0;">🔗 Official F1 Sources</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                <a href="https://www.formula1.com" target="_blank" style="color: #00D0FF; text-decoration: none; font-weight: 600;">
+                    🏎️ Formula1.com
+                </a>
+                <a href="https://www.fia.com" target="_blank" style="color: #00D0FF; text-decoration: none; font-weight: 600;">
+                    📋 FIA Official
+                </a>
+                <a href="https://www.formula1.com/en/latest.html" target="_blank" style="color: #00D0FF; text-decoration: none; font-weight: 600;">
+                    📰 F1 Latest News
+                </a>
+                <a href="https://www.formula1.com/en/results.html" target="_blank" style="color: #00D0FF; text-decoration: none; font-weight: 600;">
+                    📊 Race Results
+                </a>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # TAB 3: Championship Evolution
+    with tab3:
         st.markdown("<br>", unsafe_allow_html=True)
         st.header("Driver Championship Progression")
         st.markdown("*Watch how championships unfold race by race*")
@@ -381,8 +419,8 @@ def main():
                     delta="pts"
                 )
     
-    # TAB 3: Constructor Dominance
-    with tab3:
+    # TAB 4: Constructor Dominance
+    with tab4:
         st.markdown("<br>", unsafe_allow_html=True)
         st.header("Constructor Championship Heatmap")
         st.markdown("*Visualize team performance and dominance across seasons*")
@@ -424,8 +462,8 @@ def main():
             </div>
             """, unsafe_allow_html=True)
     
-    # TAB 4: Circuit Analysis
-    with tab4:
+    # TAB 5: Circuit Analysis
+    with tab5:
         st.markdown("<br>", unsafe_allow_html=True)
         st.header("Circuit Performance Analysis")
         st.markdown("*Discover the masters of each legendary track*")
@@ -461,8 +499,8 @@ def main():
         with col3:
             st.metric("VICTORIES", int(most_successful['wins']))
     
-    # TAB 5: Driver Comparisons
-    with tab5:
+    # TAB 6: Driver Comparisons
+    with tab6:
         st.markdown("<br>", unsafe_allow_html=True)
         st.header("Head-to-Head Driver Comparison")
         st.markdown("*Compare racing legends and see who dominated the sport*")
@@ -531,12 +569,12 @@ def main():
     # Footer
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown("---")
-    st.markdown("""
+    st.markdown(f"""
         <div style='text-align: center; padding: 20px;'>
         <p style='color: #666; font-size: 0.85rem; font-weight: 500; letter-spacing: 0.5px;'>
             DATA SOURCE: KAGGLE F1 HISTORICAL DATASET (1950-2024) & OPENF1 API<br>
-            BUILT WITH PYTHON, STREAMLIT & PLOTLY<br>
-            <span style='color: #E10600; font-weight: 700; text-transform: uppercase;'>FORMULA 1 ANALYTICS DASHBOARD - PROJECT BY U. HEWAGE</span>
+            BUILT WITH PYTHON, STREAMLIT & PLOTLY • UPDATED {datetime.now().strftime("%B %Y")}<br>
+            <span style='color: #E10600; font-weight: 700; text-transform: uppercase;'>FORMULA 1 ANALYTICS DASHBOARD 2026 - PROJECT BY U. HEWAGE</span>
         </p>
         <p style='color: #888; font-size: 0.75rem; margin-top: 10px; font-style: italic;'>
             This is an unofficial project and is not associated with Formula 1 companies.<br>
