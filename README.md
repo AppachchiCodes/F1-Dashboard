@@ -36,9 +36,7 @@ streamlit run src/app.py
 - Historical F1 data: Kaggle Formula 1 Dataset (1950-2024)
 - 2025 Schedule: Official F1 calendar
 
-## Screenshots
 
-*Add screenshots here after deployment*
 
 
 ## License
